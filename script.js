@@ -207,6 +207,7 @@ function updateCounts() {
   const completedCount = completedList.childElementCount;
   const failedCount = failedList.childElementCount;
 
+  // Update profile counters
   document.getElementById("profile-active-count").textContent = activeCount;
   document.getElementById("profile-completed-count").textContent =
     completedCount;
@@ -214,6 +215,12 @@ function updateCounts() {
     delayedCompletedTasks;
   document.getElementById("profile-failed-count").textContent = failedCount;
 
+  // Update header panel counters
+  document.getElementById("active-count").textContent = activeCount;
+  document.getElementById("completed-count").textContent = completedCount;
+  document.getElementById("failed-count").textContent = failedCount;
+
+  // Calculate success rate and delayed ratio
   const totalTasks = activeCount + completedCount + failedCount;
   const successRate =
     totalTasks > 0 ? Math.floor((completedCount / totalTasks) * 100) : 0;
