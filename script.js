@@ -11,6 +11,34 @@ const saveTaskButton = document.getElementById("save-task");
 
 let currentTaskElement = null; // To store the task being edited
 let delayedCompletedTasks = 0; // Counter for delayed completed tasks
+let totalXP = 0; // Initialize total XP
+let currentLevelXP = 0; // XP towards current level
+let currentLevel = 1; // Start at level 1
+let nextLevelXP = 100; // XP needed for the next level
+
+// Calculate XP needed for a level
+function calculateNextLevelXP(level) {
+  return Math.floor(nextLevelXP + level * 10 * level); // Increment by 10% of the previous level's XP
+}
+
+// Update progress bar and level
+function updateLevelProgress() {
+  while (currentLevelXP >= nextLevelXP) {
+    currentLevelXP -= nextLevelXP; // Subtract the XP for the completed level
+    currentLevel++; // Increment the level
+    nextLevelXP = calculateNextLevelXP(currentLevel); // Calculate the next level's XP
+  }
+
+  document.getElementById("profile-level").textContent = currentLevel;
+
+  const progressPercentage = Math.min(
+    (currentLevelXP / nextLevelXP) * 100,
+    100
+  );
+  document.getElementById(
+    "level-progress-bar-inner"
+  ).style.width = `${progressPercentage}%`;
+}
 
 // Open Add Task Modal
 openTaskModal.addEventListener("click", () => {
@@ -31,7 +59,11 @@ closeEditTaskModal.addEventListener("click", () => {
 // Add New Task
 addTaskButton.addEventListener("click", () => {
   const taskName = document.getElementById("task-name").value;
-  const taskDuration = document.getElementById("task-duration").value;
+  const taskDuration = parseInt(
+    document.getElementById("task-duration").value,
+    10
+  );
+  const taskNotes = document.getElementById("task-notes").value; // Capture notes
   const reminder = document.getElementById("reminder-interval").value;
 
   if (!taskName || !taskDuration) {
@@ -43,6 +75,7 @@ addTaskButton.addEventListener("click", () => {
   taskItem.classList.add("task-item");
   taskItem.dataset.name = taskName;
   taskItem.dataset.duration = taskDuration;
+  taskItem.dataset.notes = taskNotes; // Store notes in dataset
   taskItem.dataset.reminder = reminder;
   taskItem.dataset.completed = 0;
 
@@ -50,6 +83,9 @@ addTaskButton.addEventListener("click", () => {
         <h3>${taskName} <span>${0}%</span>
             <div class="gear-icon" title="Edit Task"></div>
         </h3>
+        <p class="task-notes">${
+          taskNotes || "No notes provided"
+        }</p> <!-- Display notes -->
         <div class="progress-bar">
             <div class="progress-bar-inner"></div>
         </div>
@@ -59,13 +95,11 @@ addTaskButton.addEventListener("click", () => {
         </div>
     `;
 
-  // Add gear icon click functionality
   taskItem.querySelector(".gear-icon").addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent triggering other events
+    e.stopPropagation();
     openEditTaskModal(taskItem);
   });
 
-  // Add update and close functionality
   taskItem.querySelector(".update-tracker").addEventListener("click", () => {
     updateTaskProgress(taskItem);
   });
@@ -79,6 +113,7 @@ addTaskButton.addEventListener("click", () => {
   taskModal.style.display = "none";
   document.getElementById("task-name").value = "";
   document.getElementById("task-duration").value = "";
+  document.getElementById("task-notes").value = ""; // Clear notes field
 });
 
 // Open Edit Task Modal
@@ -87,6 +122,8 @@ function openEditTaskModal(taskItem) {
   document.getElementById("edit-task-name").value = taskItem.dataset.name;
   document.getElementById("edit-task-duration").value =
     taskItem.dataset.duration;
+  document.getElementById("edit-task-notes").value =
+    taskItem.dataset.notes || ""; // Populate notes
   document.getElementById("edit-reminder-interval").value =
     taskItem.dataset.reminder;
 
@@ -97,6 +134,7 @@ function openEditTaskModal(taskItem) {
 saveTaskButton.addEventListener("click", () => {
   const taskName = document.getElementById("edit-task-name").value;
   const taskDuration = document.getElementById("edit-task-duration").value;
+  const taskNotes = document.getElementById("edit-task-notes").value; // Capture edited notes
   const reminder = document.getElementById("edit-reminder-interval").value;
 
   if (!taskName || !taskDuration) {
@@ -106,19 +144,15 @@ saveTaskButton.addEventListener("click", () => {
 
   currentTaskElement.dataset.name = taskName;
   currentTaskElement.dataset.duration = taskDuration;
+  currentTaskElement.dataset.notes = taskNotes; // Update notes in dataset
   currentTaskElement.dataset.reminder = reminder;
 
   currentTaskElement.querySelector("h3").innerHTML = `
         ${taskName} <span>${currentTaskElement.dataset.completed}%</span>
         <div class="gear-icon" title="Edit Task"></div>
     `;
-
-  currentTaskElement
-    .querySelector(".gear-icon")
-    .addEventListener("click", (e) => {
-      e.stopPropagation();
-      openEditTaskModal(currentTaskElement);
-    });
+  currentTaskElement.querySelector(".task-notes").textContent =
+    taskNotes || "No notes provided"; // Update displayed notes
 
   editTaskModal.style.display = "none";
 });
@@ -155,6 +189,14 @@ function moveTaskToCompleted(taskItem) {
     delayedCompletedTasks++;
   }
 
+  const taskDuration = parseInt(taskItem.dataset.duration, 10);
+  const xpGained = taskDuration * 50;
+  totalXP += xpGained; // Cumulative XP
+  currentLevelXP += xpGained; // XP towards current level
+
+  updateLevelProgress();
+  document.getElementById("profile-total-xp").textContent = totalXP;
+
   completedList.appendChild(taskItem);
   updateCounts();
 }
@@ -184,7 +226,4 @@ function updateCounts() {
   document.getElementById(
     "profile-delayed-ratio"
   ).textContent = `${delayedRatio}%`;
-
-  const level = Math.floor(completedCount / 5) + 1; // Example level calculation
-  document.getElementById("profile-level").textContent = level;
 }

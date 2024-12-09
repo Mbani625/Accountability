@@ -22,7 +22,11 @@
           <p>
             Delayed Completion Ratio: <span id="profile-delayed-ratio">0%</span>
           </p>
+          <p>Total XP: <span id="profile-total-xp">0</span></p>
           <p>Level: <span id="profile-level">1</span></p>
+          <div id="level-progress-bar">
+            <div id="level-progress-bar-inner"></div>
+          </div>
         </div>
         <h1>Accountability Tracker</h1>
       </div>
@@ -48,6 +52,10 @@
         <div class="modal-content">
           <h2>Add New Task</h2>
           <input type="text" id="task-name" placeholder="Task Name" required />
+          <textarea
+            id="task-notes"
+            placeholder="Task Notes (optional)"
+          ></textarea>
           <input
             type="number"
             id="task-duration"
@@ -77,6 +85,7 @@
             placeholder="Task Name"
             required
           />
+          <textarea id="edit-task-notes" placeholder="Task Notes"></textarea>
           <input
             type="number"
             id="edit-task-duration"
