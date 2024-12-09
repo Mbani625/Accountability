@@ -27,8 +27,13 @@ body {
   flex-direction: column;
 }
 
+#open-task-modal {
+  align-self: center;
+}
+
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 40% 60%;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
@@ -56,6 +61,26 @@ body {
   font-size: 0.9em;
 }
 
+#active-tasks,
+#completed-tasks,
+#failed-tasks {
+  margin: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+}
+
+#reminder-interval,
+#task-name,
+#task-duration,
+#edit-task-name,
+#edit-task-duration,
+#edit-reminder-interval {
+  width: 100%;
+  margin: 5px;
+  padding: 5px;
+}
+
 .task-item {
   background: #fff;
   margin: 10px 0;
@@ -71,7 +96,8 @@ body {
 .gear-icon {
   width: 20px;
   height: 20px;
-  background: url('https://cdn-icons-png.flaticon.com/512/126/126472.png') no-repeat center;
+  background: url("https://cdn-icons-png.flaticon.com/512/126/126472.png")
+    no-repeat center;
   background-size: contain;
   cursor: pointer;
   margin-left: 10px;
@@ -106,19 +132,21 @@ body {
 
 .progress-bar-inner {
   height: 100%;
-  background: #007BFF;
+  background: #007bff;
   width: 0%;
   transition: width 0.3s ease;
 }
 
 button {
-  background: #007BFF;
+  background: #007bff;
+  width: 60%;
   color: white;
   border: none;
   border-radius: 5px;
   padding: 8px 15px;
   font-size: 0.9em;
   cursor: pointer;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
   transition: background 0.3s;
 }
 
@@ -159,5 +187,7 @@ button:hover {
 }
 
 .modal-content button {
-  margin: 10px 5px 0;
+  margin: 10px 5px;
+  padding: 10px;
+  width: 150px;
 }
