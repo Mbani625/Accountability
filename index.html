@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accountability Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="header">
+        <div id="profile-stat-block">
+          <h2>Mike Bani</h2>
+          <p>Active Tasks: <span id="profile-active-count">0</span></p>
+          <p>Completed Tasks: <span id="profile-completed-count">0</span></p>
+          <p>
+            Delayed Completed Tasks:
+            <span id="profile-delayed-completed-count">0</span>
+          </p>
+          <p>Failed Tasks: <span id="profile-failed-count">0</span></p>
+          <p>Success Rate: <span id="profile-success-rate">0%</span></p>
+          <p>
+            Delayed Completion Ratio: <span id="profile-delayed-ratio">0%</span>
+          </p>
+          <p>Total XP: <span id="profile-total-xp">0</span></p>
+          <p>Level: <span id="profile-level">1</span></p>
+          <div id="level-progress-bar">
+            <div id="level-progress-bar-inner"></div>
+          </div>
+        </div>
+        <h1>Accountability Tracker</h1>
+      </div>
+      <button id="open-task-modal">+ Add Task</button>
+
+      <section id="active-tasks">
+        <h2>Active Tasks (<span id="active-count">0</span>)</h2>
+        <ul id="task-list"></ul>
+      </section>
+
+      <section id="completed-tasks">
+        <h2>Completed Tasks (<span id="completed-count">0</span>)</h2>
+        <ul id="completed-list"></ul>
+      </section>
+
+      <section id="failed-tasks">
+        <h2>Failed Tasks (<span id="failed-count">0</span>)</h2>
+        <ul id="failed-list"></ul>
+      </section>
+
+      <!-- Task Modal -->
+      <div id="task-modal" class="modal">
+        <div class="modal-content">
+          <h2>Add New Task</h2>
+          <input type="text" id="task-name" placeholder="Task Name" required />
+          <textarea
+            id="task-notes"
+            placeholder="Task Notes (optional)"
+          ></textarea>
+          <input
+            type="number"
+            id="task-duration"
+            placeholder="Duration (days)"
+            min="1"
+            required
+          />
+          <label for="reminder-interval"
+            ><strong>Reminder Frequency:</strong></label
+          >
+          <select id="reminder-interval">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <button id="add-task">Add Task</button>
+          <button id="close-task-modal">Close</button>
+        </div>
+      </div>
+
+      <!-- Edit Task Modal -->
+      <div id="edit-task-modal" class="modal">
+        <div class="modal-content">
+          <h2>Edit Task</h2>
+          <input
+            type="text"
+            id="edit-task-name"
+            placeholder="Task Name"
+            required
+          />
+          <textarea id="edit-task-notes" placeholder="Task Notes"></textarea>
+          <input
+            type="number"
+            id="edit-task-duration"
+            placeholder="Duration (days)"
+            min="1"
+            required
+          />
+          <label for="edit-reminder-interval">Reminder Frequency:</label>
+          <select id="edit-reminder-interval">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <button id="save-task">Save Changes</button>
+          <button id="close-edit-task-modal">Close</button>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
