@@ -93,16 +93,22 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.gear-icon {
-  width: 20px;
-  height: 20px;
-  background: url("https://cdn-icons-png.flaticon.com/512/126/126472.png")
-    no-repeat center;
-  background-size: contain;
+.settings-button,
+.clone-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.8em;
   cursor: pointer;
-  margin-left: 10px;
-  display: inline-block;
-  vertical-align: middle;
+  margin-right: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.settings-button:hover,
+.clone-button:hover {
+  background: #0056b3;
 }
 
 .task-item.completed {
@@ -113,6 +119,17 @@ body {
 .task-item.failed {
   background: #f8d7da; /* Light Red */
   border-color: #f5c6cb;
+}
+
+/* Style for delayed tasks in Active Tasks */
+.task-item.delayed {
+  background: #ffe6e6; /* Light red background */
+  border-color: #f5c6cb; /* Red border */
+}
+
+.task-item.warning {
+  background: #fff3cd; /* Light Yellow */
+  border-color: #ffeeba;
 }
 
 .task-item h3 {
@@ -223,9 +240,10 @@ textarea {
 }
 
 .modal-content button {
+  align-self: center;
   margin: 10px 5px;
   padding: 10px;
-  width: 150px;
+  width: 200px;
 }
 
 /* Responsive design for different devices */
