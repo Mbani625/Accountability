@@ -258,24 +258,6 @@ function updateTaskProgress(taskItem) {
 }
 
 
-function moveTaskToFailed(taskItem) {
-  clearInterval(taskItem.dataset.intervalId);
-  delete taskItem.dataset.intervalId;
-
-  taskItem.classList.remove("warning");
-  taskItem.classList.add("failed");
-
-  // Remove the "Close" button
-  const closeButton = taskItem.querySelector(".close-task");
-  if (closeButton) {
-    closeButton.remove();
-  }
-
-  failedList.appendChild(taskItem);
-  updateCounts();
-}
-
-
 function moveTaskToCompleted(taskItem) {
   clearInterval(taskItem.dataset.intervalId);
   delete taskItem.dataset.intervalId;
@@ -283,7 +265,6 @@ function moveTaskToCompleted(taskItem) {
   taskItem.classList.add("completed");
   taskItem.classList.remove("warning");
 
-  // Remove "Update" and "Close" buttons
   const updateButton = taskItem.querySelector(".update-tracker");
   const closeButton = taskItem.querySelector(".close-task");
 
@@ -295,31 +276,8 @@ function moveTaskToCompleted(taskItem) {
     closeButton.remove();
   }
 
-  // Ensure "Clone" button remains
-  const cloneButton = taskItem.querySelector(".clone-button");
-  if (!cloneButton) {
-    const newCloneButton = document.createElement("button");
-    newCloneButton.classList.add("clone-button");
-    newCloneButton.textContent = "Clone";
-    newCloneButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const clonedTaskData = {
-        name: taskItem.dataset.name,
-        duration: taskItem.dataset.duration,
-        notes: taskItem.dataset.notes,
-        reminder: taskItem.dataset.reminder,
-      };
-      const clonedTask = createTaskElement(clonedTaskData);
-      taskList.appendChild(clonedTask);
-      updateCounts();
-    });
-    taskItem.querySelector(".task-buttons").appendChild(newCloneButton);
-  }
-
-  // Add to the completed list
   completedList.appendChild(taskItem);
 
-  // Update XP
   const taskDuration = parseInt(taskItem.dataset.duration, 10);
   const xpGained = taskDuration * 50;
   totalXP += xpGained;
@@ -329,6 +287,28 @@ function moveTaskToCompleted(taskItem) {
   document.getElementById("profile-total-xp").textContent = totalXP;
 
   updateCounts();
+
+  // Update cube progress
+  updateCubeProgress(); // Color the next cube green
+}
+
+function moveTaskToFailed(taskItem) {
+  clearInterval(taskItem.dataset.intervalId);
+  delete taskItem.dataset.intervalId;
+
+  taskItem.classList.remove("warning");
+  taskItem.classList.add("failed");
+
+  const closeButton = taskItem.querySelector(".close-task");
+  if (closeButton) {
+    closeButton.remove();
+  }
+
+  failedList.appendChild(taskItem);
+  updateCounts();
+
+  // Reset cube progress
+  resetCubeProgress(); // Reset all cubes to blue
 }
 
 
@@ -372,4 +352,48 @@ darkModeSwitch.addEventListener("change", () => {
     localStorage.setItem("dark-mode", "disabled");
   }
 });
+
+// Create a grid of 365 cubes
+function createCubeGrid() {
+  const cubeGrid = document.getElementById("cube-grid");
+  const totalCubes = 365;
+  for (let i = 0; i < totalCubes; i++) {
+    const cube = document.createElement("div");
+    cube.classList.add("cube");
+    cube.title = `Day ${i + 1}`; // Optional: Add hover text for day numbers
+    cubeGrid.appendChild(cube);
+  }
+}
+
+// Call the function to generate the grid
+createCubeGrid();
+
+let currentCubeIndex = 0; // Track the current cube to color
+const totalCubes = 365; // Total cubes in the grid
+
+function updateCubeProgress() {
+  const cubes = document.querySelectorAll("#cube-grid .cube");
+
+  // If we exceed the total cubes, stop
+  if (currentCubeIndex >= totalCubes) {
+    console.log("All days completed!");
+    return;
+  }
+
+  // Change the color of the next cube to green
+  cubes[currentCubeIndex].style.backgroundColor = "#4caf50"; // Green
+  currentCubeIndex++;
+}
+
+function resetCubeProgress() {
+  const cubes = document.querySelectorAll("#cube-grid .cube");
+
+  // Reset all cubes to blue
+  cubes.forEach((cube) => {
+    cube.style.backgroundColor = "#007bff"; // Blue
+  });
+
+  // Reset the tracker
+  currentCubeIndex = 0;
+}
 

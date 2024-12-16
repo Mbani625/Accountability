@@ -382,3 +382,45 @@ body.dark-mode #level-progress-bar {
 body.dark-mode #level-progress-bar-inner {
   background: #3aaf50; /* Adjusted green for dark mode */
 }
+
+/* Cube Grid */
+#cube-grid {
+  display: grid;
+  grid-template-columns: repeat(40, auto); /* 20 columns */
+  grid-template-rows: repeat(10, auto);   /* 18 rows */
+  gap: 10px; /* Small gap between cubes */
+  justify-content: center;
+  margin: 20px auto;
+  width: fit-content;
+}
+
+#cube-grid .cube {
+  width: 10px;
+  height: 10px;
+  background-color: #007bff; /* Default blue */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 1px;
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+#cube-grid .cube.green {
+  background-color: #4caf50; /* Green for completed days */
+}
+
+#cube-grid .cube:hover {
+  background-color: #0056b3; /* Highlight blue on hover */
+}
+
+/* Responsive Design for Mobile Screens */
+@media (max-width: 768px) {
+  #cube-grid {
+    grid-template-columns: repeat(20, 1fr); /* 20 columns */
+    grid-template-rows: repeat(18, auto);   /* 18 rows */
+    gap: 4px; /* Smaller gap on mobile */
+  }
+
+  #cube-grid .cube {
+    width: 5px; /* Slightly smaller cubes */
+    height: 5px;
+  }
+}
