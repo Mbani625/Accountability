@@ -354,4 +354,22 @@ function updateCounts() {
   document.getElementById("profile-success-rate").textContent = `${successRate}%`;
 }
 
+// Dark Mode Toggle
+const darkModeSwitch = document.getElementById("dark-mode-switch");
+
+// Load saved preference from localStorage
+if (localStorage.getItem("dark-mode") === "enabled") {
+  document.body.classList.add("dark-mode");
+  darkModeSwitch.checked = true;
+}
+
+darkModeSwitch.addEventListener("change", () => {
+  if (darkModeSwitch.checked) {
+    document.body.classList.add("dark-mode");
+    localStorage.setItem("dark-mode", "enabled");
+  } else {
+    document.body.classList.remove("dark-mode");
+    localStorage.setItem("dark-mode", "disabled");
+  }
+});
 
