@@ -414,13 +414,13 @@ body.dark-mode #level-progress-bar-inner {
 /* Responsive Design for Mobile Screens */
 @media (max-width: 768px) {
   #cube-grid {
-    grid-template-columns: repeat(20, 1fr); /* 20 columns */
-    grid-template-rows: repeat(18, auto);   /* 18 rows */
+    grid-template-columns: repeat(30, 1fr); /* 20 columns */
+    grid-template-rows: repeat(12, auto);   /* 18 rows */
     gap: 4px; /* Smaller gap on mobile */
   }
 
   #cube-grid .cube {
-    width: 5px; /* Slightly smaller cubes */
-    height: 5px;
+    width: 10px; /* Slightly smaller cubes */
+    height: 10px;
   }
 }
