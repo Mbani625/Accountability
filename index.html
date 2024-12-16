@@ -62,13 +62,6 @@
             min="1"
             required
           />
-          <label for="reminder-interval"
-            ><strong>Reminder Frequency:</strong></label
-          >
-          <select id="reminder-interval">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-          </select>
           <button id="add-task">Add Task</button>
           <button id="close-task-modal">Close</button>
         </div>
@@ -92,13 +85,17 @@
             min="1"
             required
           />
-          <label for="edit-reminder-interval">Reminder Frequency:</label>
-          <select id="edit-reminder-interval">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-          </select>
           <button id="save-task">Save Changes</button>
           <button id="close-edit-task-modal">Close</button>
+        </div>
+      </div>
+      <!-- Update Modal -->
+      <div id="update-modal" class="modal">
+        <div class="modal-content">
+          <h2>Enter Update</h2>
+          <input type="text" id="update-modal-input" placeholder="Update 1" />
+          <button id="update-modal-save">Save</button>
+          <button id="update-modal-close">Close</button>
         </div>
       </div>
     </div>

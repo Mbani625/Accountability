@@ -2,16 +2,17 @@ const taskList = document.getElementById("task-list");
 const completedList = document.getElementById("completed-list");
 const failedList = document.getElementById("failed-list");
 const taskModal = document.getElementById("task-modal");
-const editTaskModal = document.getElementById("edit-task-modal");
+const updateModal = document.getElementById("update-modal");
+const updateModalInput = document.getElementById("update-modal-input");
+const updateModalSave = document.getElementById("update-modal-save");
+const updateModalClose = document.getElementById("update-modal-close");
+let currentTaskForUpdate = null;
 const openTaskModal = document.getElementById("open-task-modal");
 const closeTaskModal = document.getElementById("close-task-modal");
-const closeEditTaskModal = document.getElementById("close-edit-task-modal");
 const addTaskButton = document.getElementById("add-task");
-const saveTaskButton = document.getElementById("save-task");
 const WARNING_HOURS = 0.012; // SET THIS TO 24 ON GO LIVE
 const FAILURE_HOURS = 0.025; // SET THIS TO 48 ON GO LIVE
 
-let currentTaskElement = null;
 let totalXP = 0;
 let currentLevelXP = 0;
 let currentLevel = 1;
@@ -52,9 +53,151 @@ closeTaskModal.addEventListener("click", () => {
   taskModal.style.display = "none";
 });
 
-closeEditTaskModal.addEventListener("click", () => {
-  editTaskModal.style.display = "none";
+// Open the update modal and focus the text input
+updateModalClose.addEventListener("click", () => {
+  updateModal.style.display = "none";
+  currentTaskForUpdate = null;
 });
+
+updateModalSave.addEventListener("click", saveUpdate);
+
+updateModalInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    saveUpdate(); // Trigger save action
+  }
+});
+
+function saveUpdate() {
+  const updateText = updateModalInput.value.trim();
+  if (updateText && currentTaskForUpdate) {
+    const updateCount = parseInt(currentTaskForUpdate.dataset.updateCount, 10) + 1;
+    currentTaskForUpdate.dataset.updateCount = updateCount;
+
+    const updateList = currentTaskForUpdate.querySelector(".update-list");
+    const updateItem = document.createElement("li");
+    updateItem.textContent = `Update ${updateCount}: ${updateText}`;
+    updateList.appendChild(updateItem);
+
+    updateModalInput.value = "";
+    updateModal.style.display = "none";
+
+    updateTaskProgress(currentTaskForUpdate);
+    currentTaskForUpdate = null;
+  }
+}
+
+// Ensure the cursor focuses on the input when opening the modal
+document.querySelectorAll(".update-tracker").forEach((button) => {
+  button.addEventListener("click", () => {
+    currentTaskForUpdate = button.closest(".task-item");
+    const updateCount = parseInt(currentTaskForUpdate.dataset.updateCount, 10) + 1;
+    updateModalInput.placeholder = `Update ${updateCount}`;
+    updateModalInput.value = ""; // Clear previous input
+    updateModal.style.display = "flex";
+
+    // Focus cursor in the input field
+    updateModalInput.focus();
+  });
+});
+
+
+function handleCloseTask(taskItem) {
+  const progress = parseInt(
+    taskItem.querySelector(".progress-bar-inner").style.width,
+    10
+  );
+
+  if (progress >= 100) {
+    moveTaskToCompleted(taskItem);
+  } else {
+    moveTaskToFailed(taskItem);
+  }
+}
+
+function createTaskElement(taskData) {
+  const taskItem = document.createElement("li");
+  taskItem.classList.add("task-item");
+  taskItem.dataset.name = taskData.name;
+  taskItem.dataset.duration = taskData.duration;
+  taskItem.dataset.notes = taskData.notes;
+  taskItem.dataset.completed = 0;
+  taskItem.dataset.updateCount = 0;
+
+  taskItem.innerHTML = `
+        <h3>${taskData.name} (Duration: ${taskData.duration} days) <span>${0}%</span></h3>
+        <p class="task-notes">${taskData.notes || "No notes provided"}</p>
+        <ul class="update-list"></ul>
+        <div class="progress-bar">
+            <div class="progress-bar-inner"></div>
+        </div>
+        <div class="task-buttons">
+            <button class="clone-button">Clone</button>
+            <button class="update-tracker">Update</button>
+            <button class="close-task">Close</button>
+        </div>
+    `;
+
+  taskItem.querySelector(".clone-button").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const clonedTaskData = { ...taskData };
+    const clonedTask = createTaskElement(clonedTaskData);
+    taskList.appendChild(clonedTask);
+    updateCounts();
+  });
+
+  taskItem.querySelector(".update-tracker").addEventListener("click", () => {
+    currentTaskForUpdate = taskItem;
+    const updateCount = parseInt(taskItem.dataset.updateCount, 10) + 1;
+    updateModalInput.placeholder = `Update ${updateCount}`;
+    updateModal.style.display = "flex";
+  });
+
+  taskItem.querySelector(".close-task").addEventListener("click", () => {
+    handleCloseTask(taskItem);
+  });
+
+  return taskItem;
+}
+
+addTaskButton.addEventListener("click", () => {
+  // Retrieve input values
+  const taskName = document.getElementById("task-name").value.trim();
+  const taskDuration = parseInt(
+    document.getElementById("task-duration").value.trim(),
+    10
+  );
+  const taskNotes = document.getElementById("task-notes").value.trim();
+
+  // Validate input values
+  if (!taskName || isNaN(taskDuration) || taskDuration <= 0) {
+    alert("Please enter a valid task name and duration.");
+    return;
+  }
+
+  // Create task data object
+  const taskData = {
+    name: taskName,
+    duration: taskDuration,
+    notes: taskNotes,
+  };
+
+  // Create and add the task to the active tasks list
+  const taskItem = createTaskElement(taskData);
+  taskList.appendChild(taskItem);
+
+  // Update counts and close the modal
+  updateCounts();
+  taskModal.style.display = "none";
+
+  // Clear the input fields
+  document.getElementById("task-name").value = "";
+  document.getElementById("task-duration").value = "";
+  document.getElementById("task-notes").value = "";
+
+  // Start the timer for the new task
+  startTaskTimer(taskItem);
+});
+
 
 function startTaskTimer(taskItem) {
   const creationTime = Date.now();
@@ -70,133 +213,18 @@ function startTaskTimer(taskItem) {
     } else if (elapsedHours >= WARNING_HOURS) {
       taskItem.classList.add("warning");
     }
-  }, 15000); // SET THIS TO 60000 ON GO LIVE
+  }, 15000);
 
   taskItem.dataset.intervalId = intervalId;
 }
 
-addTaskButton.addEventListener("click", () => {
-  const taskName = document.getElementById("task-name").value;
-  const taskDuration = parseInt(
-    document.getElementById("task-duration").value,
-    10
-  );
-  const taskNotes = document.getElementById("task-notes").value;
-  const reminder = document.getElementById("reminder-interval").value;
-
-  if (!taskName || !taskDuration) {
-    alert("Please fill out all fields");
-    return;
-  }
-
-  const taskItem = document.createElement("li");
-  taskItem.classList.add("task-item");
-  taskItem.dataset.name = taskName;
-  taskItem.dataset.duration = taskDuration;
-  taskItem.dataset.notes = taskNotes;
-  taskItem.dataset.reminder = reminder;
-  taskItem.dataset.completed = 0;
-
-  taskItem.innerHTML = `
-          <h3>${taskName} <span>${0}%</span></h3>
-          <p class="task-notes">${taskNotes || "No notes provided"}</p>
-          <div class="progress-bar">
-              <div class="progress-bar-inner"></div>
-          </div>
-          <div class="task-buttons">
-              <button class="settings-button">Settings</button>
-              <button class="clone-button">Clone</button>
-              <button class="update-tracker">Update</button>
-              <button class="close-task">Close</button>
-          </div>
-      `;
-
-  taskItem.querySelector(".settings-button").addEventListener("click", (e) => {
-    e.stopPropagation();
-    openEditTaskModal(taskItem);
-  });
-
-  taskItem.querySelector(".clone-button").addEventListener("click", (e) => {
-    e.stopPropagation();
-    cloneTask(taskItem);
-  });
-
-  taskItem.querySelector(".update-tracker").addEventListener("click", () => {
-    updateTaskProgress(taskItem);
-  });
-
-  taskItem.querySelector(".close-task").addEventListener("click", () => {
-    clearInterval(taskItem.dataset.intervalId);
-    moveTaskToFailed(taskItem);
-  });
-
-  taskList.appendChild(taskItem);
-  updateCounts();
-  taskModal.style.display = "none";
-
-  document.getElementById("task-name").value = "";
-  document.getElementById("task-duration").value = "";
-  document.getElementById("task-notes").value = "";
+function updateTaskProgress(taskItem) {
+  clearInterval(taskItem.dataset.intervalId);
+  delete taskItem.dataset.creationTime;
+  taskItem.classList.remove("warning");
 
   startTaskTimer(taskItem);
-});
 
-function cloneTask(taskItem) {
-  const clonedTaskItem = document.createElement("li");
-  clonedTaskItem.classList.add("task-item");
-  clonedTaskItem.dataset.name = taskItem.dataset.name;
-  clonedTaskItem.dataset.duration = taskItem.dataset.duration;
-  clonedTaskItem.dataset.notes = taskItem.dataset.notes;
-  clonedTaskItem.dataset.reminder = taskItem.dataset.reminder;
-  clonedTaskItem.dataset.completed = 0;
-
-  clonedTaskItem.innerHTML = `
-        <h3>${taskItem.dataset.name} <span>${0}%</span></h3>
-        <p class="task-notes">${
-          taskItem.dataset.notes || "No notes provided"
-        }</p>
-        <div class="progress-bar">
-            <div class="progress-bar-inner"></div>
-        </div>
-        <div class="task-buttons">
-            <button class="settings-button">Settings</button>
-            <button class="clone-button">Clone</button>
-            <button class="update-tracker">Update</button>
-            <button class="close-task">Close</button>
-        </div>
-    `;
-
-  clonedTaskItem
-    .querySelector(".settings-button")
-    .addEventListener("click", (e) => {
-      e.stopPropagation();
-      openEditTaskModal(clonedTaskItem);
-    });
-
-  clonedTaskItem
-    .querySelector(".clone-button")
-    .addEventListener("click", (e) => {
-      e.stopPropagation();
-      cloneTask(clonedTaskItem);
-    });
-
-  clonedTaskItem
-    .querySelector(".update-tracker")
-    .addEventListener("click", () => {
-      updateTaskProgress(clonedTaskItem);
-    });
-
-  clonedTaskItem.querySelector(".close-task").addEventListener("click", () => {
-    moveTaskToFailed(clonedTaskItem);
-  });
-
-  taskList.appendChild(clonedTaskItem);
-  updateCounts();
-
-  startTaskTimer(clonedTaskItem);
-}
-
-function updateTaskProgress(taskItem) {
   const duration = parseInt(taskItem.dataset.duration, 10);
   const completed = parseInt(taskItem.dataset.completed, 10) + 1;
   taskItem.dataset.completed = completed;
@@ -209,14 +237,26 @@ function updateTaskProgress(taskItem) {
     moveTaskToCompleted(taskItem);
   } else {
     if (failedList.contains(taskItem)) {
+      // Remove from "Failed" section and re-add to "Active"
       failedList.removeChild(taskItem);
       taskList.appendChild(taskItem);
       taskItem.classList.remove("failed");
-      startTaskTimer(taskItem); // Restart timer and warnings
+
+      // Re-add the "Close" button
+      const closeButton = document.createElement("button");
+      closeButton.classList.add("close-task");
+      closeButton.textContent = "Close";
+      closeButton.addEventListener("click", () => {
+        handleCloseTask(taskItem);
+      });
+
+      const taskButtons = taskItem.querySelector(".task-buttons");
+      taskButtons.appendChild(closeButton);
     }
     updateCounts();
   }
 }
+
 
 function moveTaskToFailed(taskItem) {
   clearInterval(taskItem.dataset.intervalId);
@@ -225,9 +265,16 @@ function moveTaskToFailed(taskItem) {
   taskItem.classList.remove("warning");
   taskItem.classList.add("failed");
 
+  // Remove the "Close" button
+  const closeButton = taskItem.querySelector(".close-task");
+  if (closeButton) {
+    closeButton.remove();
+  }
+
   failedList.appendChild(taskItem);
   updateCounts();
 }
+
 
 function moveTaskToCompleted(taskItem) {
   clearInterval(taskItem.dataset.intervalId);
@@ -235,9 +282,44 @@ function moveTaskToCompleted(taskItem) {
 
   taskItem.classList.add("completed");
   taskItem.classList.remove("warning");
-  taskItem.querySelector(".update-tracker").remove();
-  taskItem.querySelector(".close-task").remove();
 
+  // Remove "Update" and "Close" buttons
+  const updateButton = taskItem.querySelector(".update-tracker");
+  const closeButton = taskItem.querySelector(".close-task");
+
+  if (updateButton) {
+    updateButton.remove();
+  }
+
+  if (closeButton) {
+    closeButton.remove();
+  }
+
+  // Ensure "Clone" button remains
+  const cloneButton = taskItem.querySelector(".clone-button");
+  if (!cloneButton) {
+    const newCloneButton = document.createElement("button");
+    newCloneButton.classList.add("clone-button");
+    newCloneButton.textContent = "Clone";
+    newCloneButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const clonedTaskData = {
+        name: taskItem.dataset.name,
+        duration: taskItem.dataset.duration,
+        notes: taskItem.dataset.notes,
+        reminder: taskItem.dataset.reminder,
+      };
+      const clonedTask = createTaskElement(clonedTaskData);
+      taskList.appendChild(clonedTask);
+      updateCounts();
+    });
+    taskItem.querySelector(".task-buttons").appendChild(newCloneButton);
+  }
+
+  // Add to the completed list
+  completedList.appendChild(taskItem);
+
+  // Update XP
   const taskDuration = parseInt(taskItem.dataset.duration, 10);
   const xpGained = taskDuration * 50;
   totalXP += xpGained;
@@ -246,24 +328,30 @@ function moveTaskToCompleted(taskItem) {
   updateLevelProgress();
   document.getElementById("profile-total-xp").textContent = totalXP;
 
-  completedList.appendChild(taskItem);
   updateCounts();
 }
+
 
 function updateCounts() {
   const activeCount = taskList.childElementCount;
   const completedCount = completedList.childElementCount;
   const failedCount = failedList.childElementCount;
 
+  // Update the counters in the task sections
   document.getElementById("active-count").textContent = activeCount;
   document.getElementById("completed-count").textContent = completedCount;
   document.getElementById("failed-count").textContent = failedCount;
 
+  // Update the counters in the user card
+  document.getElementById("profile-active-count").textContent = activeCount;
+  document.getElementById("profile-completed-count").textContent = completedCount;
+  document.getElementById("profile-failed-count").textContent = failedCount;
+
+  // Update the success rate in the user card
   const totalTasks = activeCount + completedCount + failedCount;
   const successRate =
     totalTasks > 0 ? Math.floor((completedCount / totalTasks) * 100) : 0;
-
-  document.getElementById(
-    "profile-success-rate"
-  ).textContent = `${successRate}%`;
+  document.getElementById("profile-success-rate").textContent = `${successRate}%`;
 }
+
+
