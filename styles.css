@@ -121,12 +121,6 @@ body {
   border-color: #f5c6cb;
 }
 
-/* Style for delayed tasks in Active Tasks */
-.task-item.delayed {
-  background: #ffe6e6; /* Light red background */
-  border-color: #f5c6cb; /* Red border */
-}
-
 .task-item.warning {
   background: #fff3cd; /* Light Yellow */
   border-color: #ffeeba;

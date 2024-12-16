@@ -8,11 +8,10 @@ const closeTaskModal = document.getElementById("close-task-modal");
 const closeEditTaskModal = document.getElementById("close-edit-task-modal");
 const addTaskButton = document.getElementById("add-task");
 const saveTaskButton = document.getElementById("save-task");
-const WARNING_HOURS = 0.025; //SET THIS TO 24 ON GO LIVE//
-const FAILURE_HOURS = 0.05; //SET THIS TO 48 ON GO LIVE//
+const WARNING_HOURS = 0.012; // SET THIS TO 24 ON GO LIVE
+const FAILURE_HOURS = 0.025; // SET THIS TO 48 ON GO LIVE
 
 let currentTaskElement = null;
-let delayedCompletedTasks = 0;
 let totalXP = 0;
 let currentLevelXP = 0;
 let currentLevel = 1;
@@ -61,7 +60,6 @@ function startTaskTimer(taskItem) {
   const creationTime = Date.now();
   taskItem.dataset.creationTime = creationTime;
 
-  // Set interval to check task status every minute
   const intervalId = setInterval(() => {
     const currentTime = Date.now();
     const elapsedHours = (currentTime - creationTime) / (1000 * 60 * 60);
@@ -72,7 +70,7 @@ function startTaskTimer(taskItem) {
     } else if (elapsedHours >= WARNING_HOURS) {
       taskItem.classList.add("warning");
     }
-  }, 30000); // SET THIS TO 60000 ON GO LIVE//
+  }, 15000); // SET THIS TO 60000 ON GO LIVE
 
   taskItem.dataset.intervalId = intervalId;
 }
@@ -113,7 +111,6 @@ addTaskButton.addEventListener("click", () => {
           </div>
       `;
 
-  // Add listeners to task buttons
   taskItem.querySelector(".settings-button").addEventListener("click", (e) => {
     e.stopPropagation();
     openEditTaskModal(taskItem);
@@ -126,9 +123,6 @@ addTaskButton.addEventListener("click", () => {
 
   taskItem.querySelector(".update-tracker").addEventListener("click", () => {
     updateTaskProgress(taskItem);
-    // Reset timer after update
-    clearInterval(taskItem.dataset.intervalId);
-    startTaskTimer(taskItem);
   });
 
   taskItem.querySelector(".close-task").addEventListener("click", () => {
@@ -144,7 +138,6 @@ addTaskButton.addEventListener("click", () => {
   document.getElementById("task-duration").value = "";
   document.getElementById("task-notes").value = "";
 
-  // Start timer for the new task
   startTaskTimer(taskItem);
 });
 
@@ -199,45 +192,9 @@ function cloneTask(taskItem) {
 
   taskList.appendChild(clonedTaskItem);
   updateCounts();
+
+  startTaskTimer(clonedTaskItem);
 }
-
-function openEditTaskModal(taskItem) {
-  currentTaskElement = taskItem;
-  document.getElementById("edit-task-name").value = taskItem.dataset.name;
-  document.getElementById("edit-task-duration").value =
-    taskItem.dataset.duration;
-  document.getElementById("edit-task-notes").value =
-    taskItem.dataset.notes || "";
-  document.getElementById("edit-reminder-interval").value =
-    taskItem.dataset.reminder;
-
-  editTaskModal.style.display = "flex";
-}
-
-saveTaskButton.addEventListener("click", () => {
-  const taskName = document.getElementById("edit-task-name").value;
-  const taskDuration = document.getElementById("edit-task-duration").value;
-  const taskNotes = document.getElementById("edit-task-notes").value;
-  const reminder = document.getElementById("edit-reminder-interval").value;
-
-  if (!taskName || !taskDuration) {
-    alert("Please fill out all fields");
-    return;
-  }
-
-  currentTaskElement.dataset.name = taskName;
-  currentTaskElement.dataset.duration = taskDuration;
-  currentTaskElement.dataset.notes = taskNotes;
-  currentTaskElement.dataset.reminder = reminder;
-
-  currentTaskElement.querySelector("h3").innerHTML = `
-        ${taskName} <span>${currentTaskElement.dataset.completed}%</span>
-    `;
-  currentTaskElement.querySelector(".task-notes").textContent =
-    taskNotes || "No notes provided";
-
-  editTaskModal.style.display = "none";
-});
 
 function updateTaskProgress(taskItem) {
   const duration = parseInt(taskItem.dataset.duration, 10);
@@ -250,29 +207,36 @@ function updateTaskProgress(taskItem) {
 
   if (progress >= 100) {
     moveTaskToCompleted(taskItem);
-  } else if (failedList.contains(taskItem)) {
-    failedList.removeChild(taskItem);
-    taskList.appendChild(taskItem);
-    taskItem.classList.remove("failed");
-    taskItem.classList.add("delayed");
+  } else {
+    if (failedList.contains(taskItem)) {
+      failedList.removeChild(taskItem);
+      taskList.appendChild(taskItem);
+      taskItem.classList.remove("failed");
+      startTaskTimer(taskItem); // Restart timer and warnings
+    }
     updateCounts();
   }
 }
 
 function moveTaskToFailed(taskItem) {
+  clearInterval(taskItem.dataset.intervalId);
+  delete taskItem.dataset.intervalId;
+
+  taskItem.classList.remove("warning");
   taskItem.classList.add("failed");
+
   failedList.appendChild(taskItem);
   updateCounts();
 }
 
 function moveTaskToCompleted(taskItem) {
+  clearInterval(taskItem.dataset.intervalId);
+  delete taskItem.dataset.intervalId;
+
   taskItem.classList.add("completed");
+  taskItem.classList.remove("warning");
   taskItem.querySelector(".update-tracker").remove();
   taskItem.querySelector(".close-task").remove();
-
-  if (failedList.contains(taskItem)) {
-    delayedCompletedTasks++;
-  }
 
   const taskDuration = parseInt(taskItem.dataset.duration, 10);
   const xpGained = taskDuration * 50;
@@ -298,13 +262,8 @@ function updateCounts() {
   const totalTasks = activeCount + completedCount + failedCount;
   const successRate =
     totalTasks > 0 ? Math.floor((completedCount / totalTasks) * 100) : 0;
-  const delayedRatio =
-    totalTasks > 0 ? Math.floor((delayedCompletedTasks / totalTasks) * 100) : 0;
 
   document.getElementById(
     "profile-success-rate"
   ).textContent = `${successRate}%`;
-  document.getElementById(
-    "profile-delayed-ratio"
-  ).textContent = `${delayedRatio}%`;
 }
