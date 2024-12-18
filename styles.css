@@ -407,6 +407,10 @@ body.dark-mode #level-progress-bar-inner {
   background-color: #4caf50; /* Green for completed days */
 }
 
+#cube-grid .cube.red {
+  background-color: #f44336; /* Red for missed updates */
+}
+
 #cube-grid .cube:hover {
   background-color: #0056b3; /* Highlight blue on hover */
 }
