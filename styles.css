@@ -416,7 +416,7 @@ body.dark-mode #level-progress-bar-inner {
   #cube-grid {
     grid-template-columns: repeat(18, 1fr); /* 20 columns */
     grid-template-rows: repeat(20, auto);   /* 18 rows */
-    gap: 7px; /* Smaller gap on mobile */
+    gap: 5px; /* Smaller gap on mobile */
   }
 
   #cube-grid .cube {
