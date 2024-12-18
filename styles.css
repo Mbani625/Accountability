@@ -414,8 +414,8 @@ body.dark-mode #level-progress-bar-inner {
 /* Responsive Design for Mobile Screens */
 @media (max-width: 768px) {
   #cube-grid {
-    grid-template-columns: repeat(20, 1fr); /* 20 columns */
-    grid-template-rows: repeat(18, auto);   /* 18 rows */
+    grid-template-columns: repeat(18, 1fr); /* 20 columns */
+    grid-template-rows: repeat(20, auto);   /* 18 rows */
     gap: 7px; /* Smaller gap on mobile */
   }
 
